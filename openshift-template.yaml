@@ -1,0 +1,51 @@
+kind: Template
+apiVersion: v1
+template: ghost-pathfinder
+metadata:
+  name: ghost-pathfinder
+objects:
+
+- kind: Service
+  apiVersion: v1
+  metadata:
+    name: ghost-pathfinder
+    labels:
+      name: ghost-pathfinder
+  spec:
+    ports:
+      - name: ghost-port
+        protocol: TCP
+        port: 1984
+        targetPort: 1984
+    selector:
+      name: ghost-pathfinder
+
+- kind: DeploymentConfig
+  apiVersion: v1
+  metadata:
+    name: ghost-pathfinder
+  spec:
+    strategy:
+      type: Rolling
+    triggers:
+      - type: ConfigChange
+    replicas: 1
+    selector:
+      name: ghost-pathfinder
+    template:
+      metadata:
+        labels:
+          name: ghost-pathfinder
+      spec:
+        containers:
+          - name: ghost-pathfinder
+            image: ${GHOST_PATHFINDER_IMAGE}
+            ports:
+              - name: ghost-port
+                containerPort: 1984
+                protocol: TCP
+
+parameters:
+- name: GHOST_PATHFINDER_IMAGE
+  description: Full name of the oshinko server image
+  required: true
