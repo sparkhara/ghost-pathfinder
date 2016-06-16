@@ -14,8 +14,9 @@ queue is present, or no services are available to provide live logs.
 import argparse
 import collections
 import datetime
-import re
+import json
 import os
+import re
 import socket
 import time
 
@@ -89,14 +90,14 @@ def replace_newlines(logentries, separator='::newline::'):
                                  entry.body.replace('\n', separator))
 
 
-def ship_it(logentries, send):
+def ship_it(logentries, send, name):
     '''
     ship the log entries somewhere
 
     '''
     print('shipping {} entries'.format(len(logentries)))
     for entry in logentries:
-        bodydata = entry.body + '\n'
+        bodydata = json.dumps({name: entry.body}) + '\n'
         if send is None:
             print(bodydata)
         else:
@@ -136,7 +137,7 @@ def main(args):
         datestamp_delta = logentry.datestamp - previous_datestamp
         if datestamp_delta.total_seconds() > 0:
             replace_newlines(logentries)
-            ship_it(logentries, send)
+            ship_it(logentries, send, args.name)
             shippedentries += len(logentries)
             logentries = []
             if args.debug:
@@ -155,6 +156,8 @@ if __name__ == '__main__':
     parser.add_argument('--file', help='the file to read', required=True)
     parser.add_argument('--port', help='the port to send on (default: 1984)',
                         type=int, default=1984)
+    parser.add_argument('--name', help='service name to tag log line with',
+                        default='ghost-pathfinder')
     parser.add_argument('--debug', help='turn off socket sending',
                         action='store_true')
     args = parser.parse_args()
