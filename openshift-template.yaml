@@ -8,9 +8,9 @@ objects:
 - kind: Service
   apiVersion: v1
   metadata:
-    name: ghost-pathfinder
+    name: ${GHOST_PATHFINDER_NAME}
     labels:
-      name: ghost-pathfinder
+      name: ${GHOST_PATHFINDER_NAME}
   spec:
     ports:
       - name: ghost-port
@@ -18,12 +18,12 @@ objects:
         port: 1984
         targetPort: 1984
     selector:
-      name: ghost-pathfinder
+      name: ${GHOST_PATHFINDER_NAME}
 
 - kind: DeploymentConfig
   apiVersion: v1
   metadata:
-    name: ghost-pathfinder
+    name: ${GHOST_PATHFINDER_NAME}
   spec:
     strategy:
       type: Rolling
@@ -31,14 +31,14 @@ objects:
       - type: ConfigChange
     replicas: 1
     selector:
-      name: ghost-pathfinder
+      name: ${GHOST_PATHFINDER_NAME}
     template:
       metadata:
         labels:
-          name: ghost-pathfinder
+          name: ${GHOST_PATHFINDER_NAME}
       spec:
         containers:
-          - name: ghost-pathfinder
+          - name: ${GHOST_PATHFINDER_NAME}
             image: ${GHOST_PATHFINDER_IMAGE}
             ports:
               - name: ghost-port
@@ -49,3 +49,7 @@ parameters:
 - name: GHOST_PATHFINDER_IMAGE
   description: Full name of the ghost pathfinder image
   required: true
+- name: GHOST_PATHFINDER_NAME
+  description: name for the ghost-pathfinder
+  generate: expression
+  from: "ghost-pathfinder-[a-z0-9]{4}"
