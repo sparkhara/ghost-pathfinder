@@ -48,7 +48,7 @@ objects:
 parameters:
 - name: GHOST_PATHFINDER_IMAGE
   description: Full name of the ghost pathfinder image
-  required: true
+  value: docker.io/elmiko/ghost-pathfinder
 - name: GHOST_PATHFINDER_NAME
   description: name for the ghost-pathfinder
   value: ghost-pathfinder
