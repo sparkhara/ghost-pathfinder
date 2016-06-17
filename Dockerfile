@@ -1,4 +1,4 @@
-FROM openshift/python-27-centos7
+FROM centos/python-27-centos7
 
 ADD . /opt/ghost
 
