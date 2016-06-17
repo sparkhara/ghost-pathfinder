@@ -47,5 +47,5 @@ objects:
 
 parameters:
 - name: GHOST_PATHFINDER_IMAGE
-  description: Full name of the oshinko server image
+  description: Full name of the ghost pathfinder image
   required: true
