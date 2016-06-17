@@ -51,5 +51,4 @@ parameters:
   required: true
 - name: GHOST_PATHFINDER_NAME
   description: name for the ghost-pathfinder
-  generate: expression
-  from: "ghost-pathfinder-[a-z0-9]{4}"
+  value: ghost-pathfinder
