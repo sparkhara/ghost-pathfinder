@@ -25,11 +25,14 @@ LogEntry = collections.namedtuple('LogEntry', ['datestamp', 'body'])
 
 
 def accept(port):
+    print('awaiting connection')
     sock = socket.socket()
     sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
     sock.bind(('0.0.0.0', port))
     sock.listen(1)
-    return sock.accept()
+    send, send_addr = sock.accept()
+    print('connection from: {}'.format(send_addr))
+    return send, send_addr
 
 
 def process_log_entry(logfile, filesize):
@@ -109,13 +112,6 @@ def main(args):
     if args.debug:
         print('running in debug')
 
-    if args.port:
-        print('awaiting connection')
-        send, send_addr = accept(args.port)
-        print('connection from: {}'.format(send_addr))
-    else:
-        send = None
-
     logfile = open(args.file, 'r')
     logfile.seek(0, os.SEEK_END)
     lfsize = logfile.tell()
@@ -124,6 +120,12 @@ def main(args):
     logentries = []
     badentries = 0
     shippedentries = 0
+
+    if args.port:
+        send, send_addr = accept(args.port)
+    else:
+        send = None
+
     while logfile.tell() != lfsize:
         logentry = process_log_entry(logfile, lfsize)
         if logentry is None:
@@ -137,8 +139,11 @@ def main(args):
         datestamp_delta = logentry.datestamp - previous_datestamp
         if datestamp_delta.total_seconds() > 0:
             replace_newlines(logentries)
-            ship_it(logentries, send, args.name)
-            shippedentries += len(logentries)
+            try:
+                ship_it(logentries, send, args.name)
+                shippedentries += len(logentries)
+            except socket.error:
+                send, send_addr = accept(args.port)
             logentries = []
             if args.debug:
                 print('sleeping for {} seconds'.format(
@@ -162,4 +167,7 @@ if __name__ == '__main__':
                         action='store_true')
     args = parser.parse_args()
 
-    main(args)
+    try:
+        main(args)
+    except socket.error:
+        pass
