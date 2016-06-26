@@ -57,27 +57,14 @@ def process_log_entry(logfile, filesize):
 
     nextline = logfile.readline()
 
-    match = datestamp_match(nextline)
-    if match is None:
+    try:
+        log_line = json.loads(nextline)
+        datestamp = datetime.datetime.strptime(log_line.get('ts', ''),
+                                               '%Y-%m-%d %H:%M:%S.%f')
+    except:
         return None
 
-    datestamp = datetime.datetime.strptime(match.group(),
-                                           '%Y-%m-%d %H:%M:%S.%f')
-
-    entry = nextline
-    done_peeking = False
-    while not done_peeking:
-        saved_pos = logfile.tell()
-        if saved_pos == filesize:
-            done_peeking = True
-            continue
-        nextline = logfile.readline()
-        if datestamp_match(nextline) is None:
-            entry += nextline
-        else:
-            logfile.seek(saved_pos)
-            done_peeking = True
-    return LogEntry(datestamp, entry)
+    return LogEntry(datestamp, nextline)
 
 
 def replace_newlines(logentries, separator='::newline::'):
@@ -93,13 +80,14 @@ def replace_newlines(logentries, separator='::newline::'):
                                  entry.body.replace('\n', separator))
 
 
-def ship_it(logentries, send, name):
+def ship_it(logentries, send):
     '''
     ship the log entries somewhere
 
     '''
     print('shipping {} entries'.format(len(logentries)))
     for entry in logentries:
+        name = json.loads(entry.body).get('hn', 'ghost-pathfinder').replace('.', '-')
         bodydata = json.dumps({name: entry.body}) + '\n'
         if send is None:
             print(bodydata)
@@ -138,9 +126,8 @@ def main(args):
                               else logentries[-1].datestamp)
         datestamp_delta = logentry.datestamp - previous_datestamp
         if datestamp_delta.total_seconds() > 0:
-            replace_newlines(logentries)
             try:
-                ship_it(logentries, send, args.name)
+                ship_it(logentries, send)
                 shippedentries += len(logentries)
             except socket.error:
                 send, send_addr = accept(args.port)
@@ -161,8 +148,6 @@ if __name__ == '__main__':
     parser.add_argument('--file', help='the file to read', required=True)
     parser.add_argument('--port', help='the port to send on (default: 1984)',
                         type=int, default=1984)
-    parser.add_argument('--name', help='service name to tag log line with',
-                        default='ghost-pathfinder')
     parser.add_argument('--debug', help='turn off socket sending',
                         action='store_true')
     args = parser.parse_args()
