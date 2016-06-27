@@ -132,10 +132,13 @@ def main(args):
             except socket.error:
                 send, send_addr = accept(args.port)
             logentries = []
+            sleep_time = float(
+                         datestamp_delta.total_seconds() / float(args.time)
+                         if args.time != 1
+                         else datestamp_delta.total_seconds())
             if args.debug:
-                print('sleeping for {} seconds'.format(
-                      datestamp_delta.total_seconds()))
-            time.sleep(datestamp_delta.total_seconds())
+                print('sleeping for {} seconds'.format(sleep_time))
+            time.sleep(sleep_time)
         logentries.append(logentry)
 
     print('shipped {} valid entries'.format(shippedentries))
@@ -148,6 +151,8 @@ if __name__ == '__main__':
     parser.add_argument('--file', help='the file to read', required=True)
     parser.add_argument('--port', help='the port to send on (default: 1984)',
                         type=int, default=1984)
+    parser.add_argument('--time', help='the time scaling factor (default: 1)',
+                        type=int, default=1)
     parser.add_argument('--debug', help='turn off socket sending',
                         action='store_true')
     args = parser.parse_args()
