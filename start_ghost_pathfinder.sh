@@ -12,4 +12,4 @@ if [ -z $GHOST_PATHFINDER_TIMESCALAR ]; then
     exit 1
 fi
 
-python /opt/ghost/ghost_pathfinder.py --file $GHOST_PATHFINDER_LOGFILE --time $GHOST_PATHFINDER_TIMESSCALAR
+python /opt/ghost/ghost_pathfinder.py --file $GHOST_PATHFINDER_LOGFILE --time $GHOST_PATHFINDER_TIMESCALAR
