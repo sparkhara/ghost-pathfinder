@@ -14,6 +14,7 @@ queue is present, or no services are available to provide live logs.
 import argparse
 import collections
 import datetime
+import gzip
 import json
 import os
 import re
@@ -35,7 +36,7 @@ def accept(port):
     return send, send_addr
 
 
-def process_log_entry(logfile, filesize):
+def process_log_entry(nextline):
     '''
     attempt to read log lines and group them
 
@@ -55,7 +56,7 @@ def process_log_entry(logfile, filesize):
         datestamp = line[:23]
         return re.match(DATESTAMP_RE, datestamp)
 
-    nextline = logfile.readline()
+    # nextline = logfile.readline()
 
     try:
         log_line = json.loads(nextline)
@@ -100,10 +101,10 @@ def main(args):
     if args.debug:
         print('running in debug')
 
-    logfile = open(args.file, 'r')
-    logfile.seek(0, os.SEEK_END)
-    lfsize = logfile.tell()
-    logfile.seek(0)
+    logfile = gzip.GzipFile(args.file, 'r')
+    # logfile.seek(0, os.SEEK_END)
+    # lfsize = logfile.tell()
+    # logfile.seek(0)
 
     logentries = []
     badentries = 0
@@ -114,8 +115,9 @@ def main(args):
     else:
         send = None
 
-    while logfile.tell() != lfsize:
-        logentry = process_log_entry(logfile, lfsize)
+    for logline in logfile:
+    # while logfile.tell() != lfsize:
+        logentry = process_log_entry(logline)
         if logentry is None:
             badentries += 1
             continue
