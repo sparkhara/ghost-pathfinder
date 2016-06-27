@@ -40,6 +40,11 @@ objects:
         containers:
           - name: ${GHOST_PATHFINDER_NAME}
             image: ${GHOST_PATHFINDER_IMAGE}
+            env:
+              - name: GHOST_PATHFINDER_LOGFILE 
+                value: ${LOGFILE}
+              - name: GHOST_PATHFINDER_TIMESCALAR 
+                value: ${TIMESCALAR}
             ports:
               - name: ghost-port
                 containerPort: 1984
@@ -52,3 +57,9 @@ parameters:
 - name: GHOST_PATHFINDER_NAME
   description: name for the ghost-pathfinder
   value: ghost-pathfinder
+- name: LOGFILE
+  description: Log file to process
+  required: true
+- name: TIMESCALAR
+  description: Time factor to scale log playback
+  required: true
